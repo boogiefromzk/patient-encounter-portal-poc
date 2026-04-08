@@ -31,7 +31,7 @@ function CopyId({ id }: { id: string }) {
   )
 }
 
-export const columns: ColumnDef<ItemPublic>[] = [
+const baseColumns: ColumnDef<ItemPublic>[] = [
   {
     accessorKey: "id",
     header: "ID",
@@ -39,7 +39,7 @@ export const columns: ColumnDef<ItemPublic>[] = [
   },
   {
     accessorKey: "title",
-    header: "Title",
+    header: "Name",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.title}</span>
     ),
@@ -61,13 +61,42 @@ export const columns: ColumnDef<ItemPublic>[] = [
       )
     },
   },
-  {
+]
+
+const managerColumn: ColumnDef<ItemPublic> = {
+  id: "manager",
+  header: "Manager",
+  cell: ({ row }) => {
+    const owner = row.original.owner
+    if (!owner) {
+      return <span className="italic text-muted-foreground">Unassigned</span>
+    }
+    return (
+      <div className="flex flex-col">
+        {owner.full_name && (
+          <span className="font-medium text-sm">{owner.full_name}</span>
+        )}
+        <span className="text-xs text-muted-foreground">{owner.email}</span>
+      </div>
+    )
+  },
+}
+
+export function getColumns(isAdmin: boolean): ColumnDef<ItemPublic>[] {
+  const actionsColumn: ColumnDef<ItemPublic> = {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
       <div className="flex justify-end">
-        <ItemActionsMenu item={row.original} />
+        <ItemActionsMenu item={row.original} isAdmin={isAdmin} />
       </div>
     ),
-  },
-]
+  }
+
+  if (isAdmin) {
+    return [...baseColumns, managerColumn, actionsColumn]
+  }
+  return [...baseColumns, actionsColumn]
+}
+
+export const columns = getColumns(false)

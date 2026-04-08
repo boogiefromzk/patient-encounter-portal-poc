@@ -101,11 +101,17 @@ class ItemPublic(ItemBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     created_at: datetime | None = None
+    owner: UserPublic | None = None
 
 
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+# Used by superusers to reassign a patient's managing user
+class ItemAssignOwner(SQLModel):
+    owner_id: uuid.UUID
 
 
 # Generic message

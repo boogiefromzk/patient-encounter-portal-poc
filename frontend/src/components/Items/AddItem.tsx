@@ -56,7 +56,7 @@ const AddItem = () => {
     mutationFn: (data: ItemCreate) =>
       ItemsService.createItem({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Item created successfully")
+      showSuccessToast("Patient created successfully")
       form.reset()
       setIsOpen(false)
     },
@@ -75,14 +75,14 @@ const AddItem = () => {
       <DialogTrigger asChild>
         <Button className="my-4">
           <Plus className="mr-2" />
-          Add Item
+          Add Patient
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Item</DialogTitle>
+          <DialogTitle>Add Patient</DialogTitle>
           <DialogDescription>
-            Fill in the details to add a new item.
+            Fill in the details to add a new patient.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

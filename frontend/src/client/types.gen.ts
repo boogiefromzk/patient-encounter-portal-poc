@@ -18,12 +18,17 @@ export type ItemCreate = {
     description?: (string | null);
 };
 
+export type ItemAssignOwner = {
+    owner_id: string;
+};
+
 export type ItemPublic = {
     title: string;
     description?: (string | null);
     id: string;
     owner_id: string;
     created_at?: (string | null);
+    owner?: (UserPublic | null);
 };
 
 export type ItemsPublic = {
@@ -144,6 +149,13 @@ export type ItemsDeleteItemData = {
 };
 
 export type ItemsDeleteItemResponse = (Message);
+
+export type ItemsAssignItemOwnerData = {
+    id: string;
+    requestBody: ItemAssignOwner;
+};
+
+export type ItemsAssignItemOwnerResponse = (ItemPublic);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;

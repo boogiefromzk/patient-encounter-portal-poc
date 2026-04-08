@@ -8,14 +8,16 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import AssignManager from "../Items/AssignManager"
 import DeleteItem from "../Items/DeleteItem"
 import EditItem from "../Items/EditItem"
 
 interface ItemActionsMenuProps {
   item: ItemPublic
+  isAdmin?: boolean
 }
 
-export const ItemActionsMenu = ({ item }: ItemActionsMenuProps) => {
+export const ItemActionsMenu = ({ item, isAdmin = false }: ItemActionsMenuProps) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -27,6 +29,9 @@ export const ItemActionsMenu = ({ item }: ItemActionsMenuProps) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <EditItem item={item} onSuccess={() => setOpen(false)} />
+        {isAdmin && (
+          <AssignManager item={item} onSuccess={() => setOpen(false)} />
+        )}
         <DeleteItem id={item.id} onSuccess={() => setOpen(false)} />
       </DropdownMenuContent>
     </DropdownMenu>
