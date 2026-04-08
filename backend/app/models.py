@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -70,7 +70,7 @@ class UsersPublic(SQLModel):
 # Shared properties
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=10000)
 
 
 # Properties to receive on item creation
@@ -81,6 +81,7 @@ class ItemCreate(ItemBase):
 # Properties to receive on item update
 class ItemUpdate(ItemBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore[assignment]
+    description: str | None = Field(default=None, max_length=10000)  # type: ignore[assignment]
 
 
 # Database model, database table inferred from class name
@@ -90,6 +91,8 @@ class Item(ItemBase, table=True):
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
+    # Override to use TEXT column type (no length cap at DB level)
+    description: str | None = Field(default=None, sa_type=Text())  # type: ignore[assignment]
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )

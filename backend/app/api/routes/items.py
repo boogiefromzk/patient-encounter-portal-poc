@@ -73,7 +73,7 @@ def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> 
         raise HTTPException(status_code=404, detail="Item not found")
     if not current_user.is_superuser and (item.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return item
+    return _item_to_public(item, include_owner=True)
 
 
 @router.post("/", response_model=ItemPublic)
@@ -81,8 +81,10 @@ def create_item(
     *, session: SessionDep, current_user: CurrentUser, item_in: ItemCreate
 ) -> Any:
     """
-    Create new item.
+    Create new patient. Superusers only.
     """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     item = Item.model_validate(item_in, update={"owner_id": current_user.id})
     session.add(item)
     session.commit()

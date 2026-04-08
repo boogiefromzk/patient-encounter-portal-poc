@@ -27,12 +27,16 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import { Textarea } from "@/components/ui/textarea"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
-  description: z.string().optional(),
+  title: z.string().min(1, { message: "Full name is required" }),
+  description: z
+    .string()
+    .max(10000, { message: "Medical history must be 10,000 characters or less" })
+    .optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -78,7 +82,7 @@ const AddItem = () => {
           Add Patient
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add Patient</DialogTitle>
           <DialogDescription>
@@ -94,11 +98,11 @@ const AddItem = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Title <span className="text-destructive">*</span>
+                      Full Name <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Title"
+                        placeholder="Patient full name"
                         type="text"
                         {...field}
                         required
@@ -114,9 +118,13 @@ const AddItem = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Medical History</FormLabel>
                     <FormControl>
-                      <Input placeholder="Description" type="text" {...field} />
+                      <Textarea
+                        placeholder="Enter medical history..."
+                        maxLength={10000}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

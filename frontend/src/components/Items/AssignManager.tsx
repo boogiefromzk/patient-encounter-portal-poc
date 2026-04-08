@@ -37,7 +37,7 @@ import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
 const formSchema = z.object({
-  owner_id: z.string().min(1, { message: "Please select a manager" }),
+  owner_id: z.string().min(1, { message: "Please select a clinician" }),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -72,7 +72,7 @@ const AssignManager = ({ item, onSuccess }: AssignManagerProps) => {
         requestBody: { owner_id: data.owner_id },
       }),
     onSuccess: () => {
-      showSuccessToast("Manager assigned successfully")
+      showSuccessToast("Clinician assigned successfully")
       setIsOpen(false)
       onSuccess()
     },
@@ -93,15 +93,15 @@ const AssignManager = ({ item, onSuccess }: AssignManagerProps) => {
         onClick={() => setIsOpen(true)}
       >
         <UserCog />
-        Assign Manager
+        Assign Clinician
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Assign Manager</DialogTitle>
+              <DialogTitle>Assign Clinician</DialogTitle>
               <DialogDescription>
-                Select the user who will manage this patient record.
+                Select the clinician who will manage this patient record.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4">
@@ -111,7 +111,7 @@ const AssignManager = ({ item, onSuccess }: AssignManagerProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Manager <span className="text-destructive">*</span>
+                      Clinician <span className="text-destructive">*</span>
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
