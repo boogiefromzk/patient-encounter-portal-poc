@@ -96,13 +96,26 @@ services:
   frontend:
     restart: "no"
     ports:
-      - "5173:80"
+      - "5173:5173"
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      target: build-stage
       args:
         - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
+    command: bun run dev --host 0.0.0.0
+    labels:
+      - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=5173
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /app/frontend
+          ignore:
+            - ./frontend/node_modules
+        - path: ./frontend/package.json
+          action: rebuild
 
   playwright:
     build:
