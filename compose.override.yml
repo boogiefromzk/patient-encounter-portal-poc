@@ -104,7 +104,10 @@ services:
       args:
         - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
+        - PROJECT_NAME=${PROJECT_NAME}
     command: bun run dev --host 0.0.0.0
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME}
     labels:
       - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=5173
     develop:

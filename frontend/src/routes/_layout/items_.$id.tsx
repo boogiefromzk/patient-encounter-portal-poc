@@ -4,7 +4,7 @@ import { ArrowLeft, BrainCircuit, UserCircle } from "lucide-react"
 import { Fragment, Suspense } from "react"
 
 import { ItemsService } from "@/client"
-import EditItem from "@/components/Items/EditItem"
+import { ItemActionsMenu } from "@/components/Items/ItemActionsMenu"
 import EncounterTranscripts from "@/components/Items/EncounterTranscripts"
 import { Button } from "@/components/ui/button"
 import {
@@ -76,33 +76,32 @@ function PatientDetailContent() {
           </h1>
           <p className="text-sm text-muted-foreground">Patient record</p>
         </div>
-        {isAdmin && (
-          <EditItem
-            item={patient}
-            onSuccess={() => {}}
-          />
-        )}
+        {isAdmin && <ItemActionsMenu item={patient} isAdmin />}
       </div>
 
-      {patient.summary && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <BrainCircuit className="h-5 w-5 text-muted-foreground" />
-              <CardTitle>AI Clinical Summary</CardTitle>
-            </div>
-            {patient.summary_updated_at && (
-              <CardDescription>
-                Last updated:{" "}
-                {new Date(patient.summary_updated_at).toLocaleString()}
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <BrainCircuit className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>AI Clinical Summary</CardTitle>
+          </div>
+          {patient.summary_updated_at && (
+            <CardDescription>
+              Last updated:{" "}
+              {new Date(patient.summary_updated_at).toLocaleString()}
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent>
+          {patient.summary ? (
             <SimpleMarkdown text={patient.summary} />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-sm italic text-muted-foreground">
+              No AI summary generated yet.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
