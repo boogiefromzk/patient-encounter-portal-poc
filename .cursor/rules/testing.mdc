@@ -1,0 +1,30 @@
+---
+description: Testing conventions for Pytest (unit) and Playwright (e2e)
+globs: "**/{tests,test_*,*.test,*.spec}*.{py,ts}"
+alwaysApply: false
+---
+
+# Testing
+
+## Pytest (Backend Unit Tests)
+- Place tests in `backend/tests/` mirroring source structure
+- Name files `test_<module>.py`; name functions `test_<behavior>()`
+- Use `pytest.fixture` for reusable setup; prefer factory fixtures over large objects
+- Use `httpx.AsyncClient` with `ASGITransport` for testing FastAPI endpoints
+- Mock external services at the boundary; never mock SQLModel internals
+- Aim for isolated tests: each test gets a clean DB transaction (rollback after)
+- Run: `cd backend && uv run pytest -x -q`
+
+## Playwright (Frontend E2E Tests)
+- Place tests in `frontend/tests/` organized by feature
+- Name files `<feature>.spec.ts`
+- Use Page Object Model: one class per page/component in `tests/pages/`
+- Prefer `getByRole`, `getByLabel`, `getByText` locators — avoid CSS selectors
+- Always `await expect(...)` for assertions; no raw `waitForTimeout`
+- Use `test.describe` to group related scenarios
+- Run: `bun run test` from root or `frontend/`
+
+## General
+- Every new endpoint gets at least one happy-path + one error-path test
+- Every new UI feature gets at least one e2e smoke test
+- Tests must be deterministic; no sleeping, no reliance on external services

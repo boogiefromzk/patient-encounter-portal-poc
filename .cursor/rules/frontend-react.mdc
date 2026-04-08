@@ -1,0 +1,33 @@
+---
+description: Frontend React, shadcn/ui, Vite, TypeScript, Tailwind CSS conventions
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend (React 19 / TypeScript / Vite / Tailwind v4 / shadcn/ui)
+
+## TypeScript
+- Strict mode; no `any` — use `unknown` + type guards instead
+- Prefer `interface` for object shapes, `type` for unions/intersections
+- Use Zod schemas as single source of truth; infer types with `z.infer<>`
+
+## React
+- Functional components only; no `React.FC` — use plain typed props
+- Colocate hooks, types, and utils next to their component
+- Use TanStack Query for all server state; no `useEffect` for data fetching
+- Use TanStack Router for routing; define route params with Zod validation
+- Error boundaries around every route; use `react-error-boundary`
+
+## shadcn/ui + Tailwind
+- Use existing shadcn components from `components/ui/`; add new ones via CLI
+- Compose with `cn()` utility (clsx + tailwind-merge) — never raw string concat
+- Tailwind v4: use CSS-first config; prefer utility classes over custom CSS
+- Keep component variants in CVA (`class-variance-authority`)
+- Use `lucide-react` for icons; keep icon imports tree-shakeable
+
+## Forms
+- React Hook Form + Zod resolver for all forms
+- Define schemas in a shared file; reuse between frontend validation and API types
+
+## Linting
+- Biome is configured; run `bun run lint` before committing

@@ -1,0 +1,13 @@
+---
+description: Project-wide conventions for this FastAPI + React monorepo
+alwaysApply: true
+---
+
+# Project Conventions
+
+- **Monorepo**: `backend/` (Python/FastAPI, uv) + `frontend/` (React/Vite, bun)
+- Never commit `.env` files; use `.env.example` as reference
+- Prefer small, focused modules; one concern per file
+- All public APIs must have type annotations (Python) or TypeScript types (frontend)
+- Use absolute imports; no relative parent imports (`../..`)
+- Keep dependencies minimal; check existing packages before adding new ones

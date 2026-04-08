@@ -1,0 +1,31 @@
+---
+description: Backend Python, FastAPI, SQLModel, Pydantic conventions
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Backend (Python 3.10+ / FastAPI / SQLModel / Pydantic v2)
+
+## Style
+- Target Python 3.10+; use modern syntax (`X | Y` unions, `match` statements)
+- Follow ruff rules already configured; run `ruff check --fix` before committing
+- All functions must have return type annotations; use `-> None` explicitly
+- Use `Annotated[T, Depends(...)]` for dependency injection, not default args
+
+## FastAPI
+- Group routes in `APIRouter`; prefix with resource name (`/patients`, `/encounters`)
+- Use Pydantic v2 models for all request/response schemas (`model_config = ...`)
+- Return explicit status codes: `status.HTTP_201_CREATED` for creates
+- Raise `HTTPException` with meaningful `detail`; never return raw 500s
+- Use `async def` for I/O-bound endpoints; plain `def` for CPU-bound
+
+## SQLModel
+- Table models: `class Foo(SQLModel, table=True)` — keep DB schema separate from API schemas
+- Use `Session` via `Depends(get_session)` — never create sessions manually in routes
+- Always define `id: int | None = Field(default=None, primary_key=True)`
+- Alembic for all schema changes; never use `create_all` in production
+
+## Pydantic
+- Use `model_validator`, `field_validator` (v2 API); avoid legacy v1 validators
+- Prefer `BaseModel` for API schemas, `SQLModel` only for DB tables
+- Use `ConfigDict(from_attributes=True)` when reading from ORM objects
