@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlmodel import Session, col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
+from app.core.ai_summary import generate_and_save_summary
 from app.models import (
     EncounterTranscript,
     EncounterTranscriptCreate,
@@ -100,6 +101,9 @@ def create_transcript(
     session.add(transcript)
     session.commit()
     session.refresh(transcript)
+
+    generate_and_save_summary(session, item_id)
+
     return _transcript_to_public(transcript, is_editable=True)
 
 
@@ -143,6 +147,9 @@ def update_transcript(
     session.add(transcript)
     session.commit()
     session.refresh(transcript)
+
+    generate_and_save_summary(session, item_id)
+
     return _transcript_to_public(transcript, is_editable=True)
 
 

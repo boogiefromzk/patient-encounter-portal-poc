@@ -96,6 +96,11 @@ class Item(ItemBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
+    summary: str | None = Field(default=None, sa_type=Text())
+    summary_updated_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
     owner: User | None = Relationship(back_populates="items")
     transcripts: list["EncounterTranscript"] = Relationship(
         back_populates="item", cascade_delete=True
@@ -108,6 +113,8 @@ class ItemPublic(ItemBase):
     owner_id: uuid.UUID
     created_at: datetime | None = None
     owner: UserPublic | None = None
+    summary: str | None = None
+    summary_updated_at: datetime | None = None
 
 
 class ItemsPublic(SQLModel):

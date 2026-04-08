@@ -78,6 +78,7 @@ function AddTranscriptDialog({ itemId }: { itemId: string }) {
       queryClient.invalidateQueries({
         queryKey: ["items", itemId, "transcripts"],
       })
+      queryClient.invalidateQueries({ queryKey: ["items", itemId] })
     },
   })
 
@@ -190,6 +191,7 @@ function EditTranscriptDialog({
       queryClient.invalidateQueries({
         queryKey: ["items", itemId, "transcripts"],
       })
+      queryClient.invalidateQueries({ queryKey: ["items", itemId] })
     },
   })
 

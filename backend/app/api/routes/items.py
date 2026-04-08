@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
+from app.core.ai_summary import generate_and_save_summary
 from app.models import (
     Item,
     ItemAssignOwner,
@@ -113,6 +114,10 @@ def update_item(
     session.add(item)
     session.commit()
     session.refresh(item)
+
+    if "description" in update_dict:
+        generate_and_save_summary(session, id)
+
     return item
 
 

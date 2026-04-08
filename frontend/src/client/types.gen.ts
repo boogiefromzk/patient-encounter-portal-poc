@@ -55,6 +55,8 @@ export type ItemPublic = {
     owner_id: string;
     created_at?: (string | null);
     owner?: (UserPublic | null);
+    summary?: (string | null);
+    summary_updated_at?: (string | null);
 };
 
 export type ItemsPublic = {

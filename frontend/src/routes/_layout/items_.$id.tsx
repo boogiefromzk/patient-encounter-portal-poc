@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, UserCircle } from "lucide-react"
-import { Suspense } from "react"
+import { ArrowLeft, BrainCircuit, UserCircle } from "lucide-react"
+import { Fragment, Suspense } from "react"
 
 import { ItemsService } from "@/client"
 import EditItem from "@/components/Items/EditItem"
@@ -10,11 +10,37 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import useAuth from "@/hooks/useAuth"
+
+function SimpleMarkdown({ text }: { text: string }) {
+  return (
+    <div className="text-sm leading-relaxed space-y-1">
+      {text.split("\n").map((line, i) => {
+        if (!line.trim()) return <br key={i} />
+        const parts = line.split(/(\*\*.*?\*\*)/).map((segment, j) => {
+          if (segment.startsWith("**") && segment.endsWith("**")) {
+            return (
+              <strong key={j} className="font-semibold">
+                {segment.slice(2, -2)}
+              </strong>
+            )
+          }
+          return <Fragment key={j}>{segment}</Fragment>
+        })
+        return (
+          <p key={i} className="my-0">
+            {parts}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
 
 function getPatientQueryOptions(id: string) {
   return {
@@ -57,6 +83,26 @@ function PatientDetailContent() {
           />
         )}
       </div>
+
+      {patient.summary && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <BrainCircuit className="h-5 w-5 text-muted-foreground" />
+              <CardTitle>AI Clinical Summary</CardTitle>
+            </div>
+            {patient.summary_updated_at && (
+              <CardDescription>
+                Last updated:{" "}
+                {new Date(patient.summary_updated_at).toLocaleString()}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent>
+            <SimpleMarkdown text={patient.summary} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
