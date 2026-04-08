@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, ItemsAssignItemOwnerData, ItemsAssignItemOwnerResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, ItemsAssignItemOwnerData, ItemsAssignItemOwnerResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, TranscriptsReadTranscriptsData, TranscriptsReadTranscriptsResponse, TranscriptsCreateTranscriptData, TranscriptsCreateTranscriptResponse, TranscriptsUpdateTranscriptData, TranscriptsUpdateTranscriptResponse, TranscriptsDeleteTranscriptData, TranscriptsDeleteTranscriptResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -487,6 +487,102 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class TranscriptsService {
+    /**
+     * Read Transcripts
+     * List encounter transcripts for a patient.
+     * @param data The data for the request.
+     * @param data.itemId
+     * @returns EncounterTranscriptsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readTranscripts(data: TranscriptsReadTranscriptsData): CancelablePromise<TranscriptsReadTranscriptsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/items/{item_id}/transcripts/',
+            path: {
+                item_id: data.itemId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    /**
+     * Create Transcript
+     * Add a new encounter transcript to a patient.
+     * @param data The data for the request.
+     * @param data.itemId
+     * @param data.requestBody
+     * @returns EncounterTranscriptPublic Successful Response
+     * @throws ApiError
+     */
+    public static createTranscript(data: TranscriptsCreateTranscriptData): CancelablePromise<TranscriptsCreateTranscriptResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/items/{item_id}/transcripts/',
+            path: {
+                item_id: data.itemId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    /**
+     * Update Transcript
+     * Update an encounter transcript.
+     * @param data The data for the request.
+     * @param data.itemId
+     * @param data.transcriptId
+     * @param data.requestBody
+     * @returns EncounterTranscriptPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateTranscript(data: TranscriptsUpdateTranscriptData): CancelablePromise<TranscriptsUpdateTranscriptResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/items/{item_id}/transcripts/{transcript_id}',
+            path: {
+                item_id: data.itemId,
+                transcript_id: data.transcriptId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    /**
+     * Delete Transcript
+     * Delete an encounter transcript.
+     * @param data The data for the request.
+     * @param data.itemId
+     * @param data.transcriptId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteTranscript(data: TranscriptsDeleteTranscriptData): CancelablePromise<TranscriptsDeleteTranscriptResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/items/{item_id}/transcripts/{transcript_id}',
+            path: {
+                item_id: data.itemId,
+                transcript_id: data.transcriptId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }

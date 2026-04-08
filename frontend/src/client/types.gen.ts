@@ -13,6 +13,32 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
+export type EncounterTranscriptCreate = {
+    text: string;
+    encounter_date: string;
+};
+
+export type EncounterTranscriptPublic = {
+    text: string;
+    encounter_date: string;
+    id: string;
+    item_id: string;
+    created_by_id: string;
+    created_at?: (string | null);
+    created_by?: (UserPublic | null);
+    is_editable: boolean;
+};
+
+export type EncounterTranscriptsPublic = {
+    data: Array<EncounterTranscriptPublic>;
+    count: number;
+};
+
+export type EncounterTranscriptUpdate = {
+    text?: (string | null);
+    encounter_date?: (string | null);
+};
+
 export type ItemCreate = {
     title: string;
     description?: (string | null);
@@ -250,3 +276,31 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type TranscriptsReadTranscriptsData = {
+    itemId: string;
+};
+
+export type TranscriptsReadTranscriptsResponse = (EncounterTranscriptsPublic);
+
+export type TranscriptsCreateTranscriptData = {
+    itemId: string;
+    requestBody: EncounterTranscriptCreate;
+};
+
+export type TranscriptsCreateTranscriptResponse = (EncounterTranscriptPublic);
+
+export type TranscriptsUpdateTranscriptData = {
+    itemId: string;
+    transcriptId: string;
+    requestBody: EncounterTranscriptUpdate;
+};
+
+export type TranscriptsUpdateTranscriptResponse = (EncounterTranscriptPublic);
+
+export type TranscriptsDeleteTranscriptData = {
+    itemId: string;
+    transcriptId: string;
+};
+
+export type TranscriptsDeleteTranscriptResponse = (Message);

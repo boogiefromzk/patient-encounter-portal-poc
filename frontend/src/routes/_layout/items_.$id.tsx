@@ -5,6 +5,7 @@ import { Suspense } from "react"
 
 import { ItemsService } from "@/client"
 import EditItem from "@/components/Items/EditItem"
+import EncounterTranscripts from "@/components/Items/EncounterTranscripts"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -73,6 +74,8 @@ function PatientDetailContent() {
           )}
         </CardContent>
       </Card>
+
+      <EncounterTranscripts itemId={id} />
 
       {patient.owner && (
         <Card>

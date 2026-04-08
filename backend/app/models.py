@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime, Text
+from sqlalchemy import Date, DateTime, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -97,6 +97,9 @@ class Item(ItemBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="items")
+    transcripts: list["EncounterTranscript"] = Relationship(
+        back_populates="item", cascade_delete=True
+    )
 
 
 # Properties to return via API, id is always required
@@ -115,6 +118,53 @@ class ItemsPublic(SQLModel):
 # Used by superusers to reassign a patient's managing user
 class ItemAssignOwner(SQLModel):
     owner_id: uuid.UUID
+
+
+# Shared properties
+class EncounterTranscriptBase(SQLModel):
+    text: str = Field(min_length=1, max_length=4000)
+    encounter_date: date
+
+
+class EncounterTranscriptCreate(EncounterTranscriptBase):
+    pass
+
+
+class EncounterTranscriptUpdate(SQLModel):
+    text: str | None = Field(default=None, min_length=1, max_length=4000)
+    encounter_date: date | None = None
+
+
+class EncounterTranscript(EncounterTranscriptBase, table=True):
+    __tablename__ = "encounter_transcript"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    text: str = Field(sa_type=Text())  # type: ignore[assignment]
+    encounter_date: date = Field(sa_type=Date())  # type: ignore[assignment]
+    item_id: uuid.UUID = Field(
+        foreign_key="item.id", nullable=False, ondelete="CASCADE"
+    )
+    created_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    item: Item | None = Relationship(back_populates="transcripts")
+    created_by: User | None = Relationship()
+
+
+class EncounterTranscriptPublic(EncounterTranscriptBase):
+    id: uuid.UUID
+    item_id: uuid.UUID
+    created_by_id: uuid.UUID
+    created_at: datetime | None = None
+    created_by: UserPublic | None = None
+    is_editable: bool = False
+
+
+class EncounterTranscriptsPublic(SQLModel):
+    data: list[EncounterTranscriptPublic]
+    count: int
 
 
 # Generic message
