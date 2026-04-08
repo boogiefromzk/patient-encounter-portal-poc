@@ -4,6 +4,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
+from sqlalchemy import or_
 from sqlmodel import Session, col, select
 
 from app.core.config import settings
@@ -42,12 +43,18 @@ SUMMARY_CATEGORIES = (
 )
 
 
-def _build_prompt(item: Item, transcripts: list[EncounterTranscript]) -> str:
+def _build_prompt(
+    item: Item,
+    transcripts: list[EncounterTranscript],
+    *,
+    include_medical_history: bool = True,
+) -> str:
     sections: list[str] = [f"## Patient: {item.title}"]
 
-    sections.append(
-        f"### Medical History\n{item.description or 'Not recorded.'}"
-    )
+    if include_medical_history:
+        sections.append(
+            f"### Medical History\n{item.description or 'Not recorded.'}"
+        )
 
     if item.summary:
         sections.append(f"### Previous Summary\n{item.summary}")
@@ -72,12 +79,22 @@ def _build_prompt(item: Item, transcripts: list[EncounterTranscript]) -> str:
     return "\n\n".join(sections)
 
 
-def generate_and_save_summary(session: Session, item_id: uuid.UUID) -> None:
+def generate_and_save_summary(
+    session: Session,
+    item_id: uuid.UUID,
+    *,
+    description_changed: bool = False,
+) -> None:
     """Generate an AI clinical summary for a patient and persist it.
 
     Silently returns if the API key is missing or the call fails so that
     the caller's main transaction (e.g. saving a transcript) is never
     affected.
+
+    When a prior summary exists the prompt is kept minimal: medical
+    history is only included when *description_changed* is ``True``, and
+    only transcripts created or edited after the last summary are sent
+    (uses both ``created_at`` and ``updated_at`` to catch edits).
     """
     if not settings.ANTHROPIC_API_KEY or anthropic is None:
         return
@@ -87,17 +104,33 @@ def generate_and_save_summary(session: Session, item_id: uuid.UUID) -> None:
         if not item:
             return
 
-        stmt = (
-            select(EncounterTranscript)
-            .where(EncounterTranscript.item_id == item_id)
-            .order_by(col(EncounterTranscript.created_at).asc())
+        has_prior_summary = item.summary_updated_at is not None
+
+        stmt = select(EncounterTranscript).where(
+            EncounterTranscript.item_id == item_id
         )
+        if has_prior_summary:
+            cutoff = item.summary_updated_at
+            stmt = stmt.where(
+                or_(
+                    col(EncounterTranscript.created_at) > cutoff,
+                    col(EncounterTranscript.updated_at) > cutoff,
+                )
+            )
+        stmt = stmt.order_by(col(EncounterTranscript.created_at).asc())
         transcripts = list(session.exec(stmt).all())
 
-        if not transcripts and not item.description:
+        if not has_prior_summary:
+            if not transcripts and not item.description:
+                return
+        elif not description_changed and not transcripts:
             return
 
-        prompt = _build_prompt(item, transcripts)
+        prompt = _build_prompt(
+            item,
+            transcripts,
+            include_medical_history=not has_prior_summary or description_changed,
+        )
 
         client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
         message = client.messages.create(

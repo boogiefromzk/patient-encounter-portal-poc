@@ -156,6 +156,10 @@ class EncounterTranscript(EncounterTranscriptBase, table=True):
         foreign_key="item.id", nullable=False, ondelete="CASCADE"
     )
     created_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    updated_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
     item: Item | None = Relationship(back_populates="transcripts")
     created_by: User | None = Relationship()
 
@@ -165,6 +169,7 @@ class EncounterTranscriptPublic(EncounterTranscriptBase):
     item_id: uuid.UUID
     created_by_id: uuid.UUID
     created_at: datetime | None = None
+    updated_at: datetime | None = None
     created_by: UserPublic | None = None
     is_editable: bool = False
 

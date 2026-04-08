@@ -116,7 +116,7 @@ def update_item(
     session.refresh(item)
 
     if "description" in update_dict:
-        generate_and_save_summary(session, id)
+        generate_and_save_summary(session, id, description_changed=True)
 
     return item
 

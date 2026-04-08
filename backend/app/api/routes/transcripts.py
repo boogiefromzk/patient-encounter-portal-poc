@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
@@ -144,6 +145,7 @@ def update_transcript(
 
     update_dict = transcript_in.model_dump(exclude_unset=True)
     transcript.sqlmodel_update(update_dict)
+    transcript.updated_at = datetime.now(timezone.utc)
     session.add(transcript)
     session.commit()
     session.refresh(transcript)
