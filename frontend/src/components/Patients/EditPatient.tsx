@@ -72,6 +72,7 @@ const EditPatient = ({ patient, onSuccess }: EditPatientProps) => {
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] })
+      queryClient.invalidateQueries({ queryKey: ["patients", patient.id] })
     },
   })
 

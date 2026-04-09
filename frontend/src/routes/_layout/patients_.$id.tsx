@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, BrainCircuit, UserCircle } from "lucide-react"
-import { Fragment, Suspense } from "react"
+import { ArrowLeft, BrainCircuit, Loader2, UserCircle } from "lucide-react"
+import { Fragment, Suspense, useEffect, useRef, useState } from "react"
 
 import { PatientsService } from "@/client"
 import { PatientActionsMenu } from "@/components/Patients/PatientActionsMenu"
@@ -56,11 +56,39 @@ export const Route = createFileRoute("/_layout/patients_/$id")({
   }),
 })
 
+function SummaryProcessingBanner() {
+  return (
+    <div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      <span>AI summary is being generated…</span>
+    </div>
+  )
+}
+
 function PatientDetailContent() {
   const { id } = Route.useParams()
-  const { data: patient } = useSuspenseQuery(getPatientQueryOptions(id))
   const { user } = useAuth()
   const isAdmin = user?.is_superuser ?? false
+
+  const { data: patient } = useSuspenseQuery({
+    ...getPatientQueryOptions(id),
+    refetchInterval: (query) => {
+      return query.state.data?.summary_status === "processing" ? 2000 : false
+    },
+  })
+
+  const isProcessing = patient.summary_status === "processing"
+  const prevProcessing = useRef(isProcessing)
+  const [justFinished, setJustFinished] = useState(false)
+
+  useEffect(() => {
+    if (prevProcessing.current && !isProcessing) {
+      setJustFinished(true)
+      const timer = setTimeout(() => setJustFinished(false), 3000)
+      return () => clearTimeout(timer)
+    }
+    prevProcessing.current = isProcessing
+  }, [isProcessing])
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
@@ -84,22 +112,28 @@ function PatientDetailContent() {
           <div className="flex items-center gap-2">
             <BrainCircuit className="h-5 w-5 text-muted-foreground" />
             <CardTitle>AI Clinical Summary</CardTitle>
+            {justFinished && (
+              <span className="ml-auto text-xs font-normal text-green-600">
+                Updated
+              </span>
+            )}
           </div>
-          {patient.summary_updated_at && (
+          {patient.summary_updated_at && patient.summary_status !== "processing" && (
             <CardDescription>
               Last updated:{" "}
               {new Date(patient.summary_updated_at).toLocaleString()}
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-3">
+          {patient.summary_status === "processing" && <SummaryProcessingBanner />}
           {patient.summary ? (
             <SimpleMarkdown text={patient.summary} />
-          ) : (
+          ) : patient.summary_status !== "processing" ? (
             <p className="text-sm italic text-muted-foreground">
               No AI summary generated yet.
             </p>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 

@@ -2,11 +2,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from sqlmodel import Session, col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.core.ai_summary import generate_and_save_summary
+from app.core.ai_summary import generate_summary_background, mark_summary_processing
 from app.models import (
     EncounterTranscript,
     EncounterTranscriptCreate,
@@ -91,6 +91,7 @@ def create_transcript(
     current_user: CurrentUser,
     patient_id: uuid.UUID,
     transcript_in: EncounterTranscriptCreate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """Add a new encounter transcript to a patient."""
     _get_patient_or_403(session, current_user, patient_id)
@@ -100,10 +101,13 @@ def create_transcript(
         update={"patient_id": patient_id, "created_by_id": current_user.id},
     )
     session.add(transcript)
+
+    mark_summary_processing(session, patient_id)
+
     session.commit()
     session.refresh(transcript)
 
-    generate_and_save_summary(session, patient_id)
+    background_tasks.add_task(generate_summary_background, patient_id)
 
     return _transcript_to_public(transcript, is_editable=True)
 
@@ -116,6 +120,7 @@ def update_transcript(
     patient_id: uuid.UUID,
     transcript_id: uuid.UUID,
     transcript_in: EncounterTranscriptUpdate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """Update an encounter transcript (last only for non-admins)."""
     _get_patient_or_403(session, current_user, patient_id)
@@ -147,10 +152,13 @@ def update_transcript(
     transcript.sqlmodel_update(update_dict)
     transcript.updated_at = datetime.now(timezone.utc)
     session.add(transcript)
+
+    mark_summary_processing(session, patient_id)
+
     session.commit()
     session.refresh(transcript)
 
-    generate_and_save_summary(session, patient_id)
+    background_tasks.add_task(generate_summary_background, patient_id)
 
     return _transcript_to_public(transcript, is_editable=True)
 

@@ -95,6 +95,7 @@ class Patient(PatientBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     summary: str | None = Field(default=None, sa_type=Text())
+    summary_status: str | None = Field(default=None, max_length=20)
     summary_updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),  # type: ignore
@@ -111,6 +112,7 @@ class PatientPublic(PatientBase):
     created_at: datetime | None = None
     owner: UserPublic | None = None
     summary: str | None = None
+    summary_status: str | None = None
     summary_updated_at: datetime | None = None
 
 

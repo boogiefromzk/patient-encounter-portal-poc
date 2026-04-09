@@ -8,6 +8,7 @@ from sqlalchemy import or_
 from sqlmodel import Session, col, select
 
 from app.core.config import settings
+from app.core.db import engine
 from app.models import EncounterTranscript, Patient
 
 try:
@@ -79,73 +80,96 @@ def _build_prompt(
     return "\n\n".join(sections)
 
 
-def generate_and_save_summary(
-    session: Session,
+def _set_summary_status_and_commit(
+    session: Session, patient_id: uuid.UUID, status: str
+) -> None:
+    """Set summary_status and immediately commit (for use in background tasks with their own session)."""
+    patient = session.get(Patient, patient_id)
+    if patient:
+        patient.summary_status = status
+        session.add(patient)
+        session.commit()
+
+
+def mark_summary_processing(
+    session: Session, patient_id: uuid.UUID
+) -> None:
+    """Set status to processing within the caller's transaction (does NOT commit)."""
+    patient = session.get(Patient, patient_id)
+    if patient:
+        patient.summary_status = "processing"
+        session.add(patient)
+
+
+def generate_summary_background(
     patient_id: uuid.UUID,
     *,
     description_changed: bool = False,
 ) -> None:
-    """Generate an AI clinical summary for a patient and persist it.
+    """Background task: generate an AI clinical summary with its own DB session.
 
-    Silently returns if the API key is missing or the call fails so that
-    the caller's main transaction (e.g. saving a transcript) is never
-    affected.
-
-    When a prior summary exists the prompt is kept minimal: medical
-    history is only included when *description_changed* is ``True``, and
-    only transcripts created or edited after the last summary are sent
-    (uses both ``created_at`` and ``updated_at`` to catch edits).
+    Uses the shared engine to create an independent session so it can run
+    after the request handler has returned.  On success the status is set
+    to ``"completed"``; on failure it becomes ``"failed"``.
     """
     if not settings.ANTHROPIC_API_KEY or anthropic is None:
         return
 
-    try:
-        patient = session.get(Patient, patient_id)
-        if not patient:
-            return
-
-        has_prior_summary = patient.summary_updated_at is not None
-
-        stmt = select(EncounterTranscript).where(
-            EncounterTranscript.patient_id == patient_id
-        )
-        if has_prior_summary:
-            cutoff = patient.summary_updated_at
-            stmt = stmt.where(
-                or_(
-                    col(EncounterTranscript.created_at) > cutoff,
-                    col(EncounterTranscript.updated_at) > cutoff,
-                )
-            )
-        stmt = stmt.order_by(col(EncounterTranscript.created_at).asc())
-        transcripts = list(session.exec(stmt).all())
-
-        if not has_prior_summary:
-            if not transcripts and not patient.description:
+    with Session(engine) as session:
+        try:
+            patient = session.get(Patient, patient_id)
+            if not patient:
                 return
-        elif not description_changed and not transcripts:
-            return
 
-        prompt = _build_prompt(
-            patient,
-            transcripts,
-            include_medical_history=not has_prior_summary or description_changed,
-        )
+            has_prior_summary = patient.summary_updated_at is not None
 
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
-            max_tokens=2000,
-            system=SUMMARY_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
+            stmt = select(EncounterTranscript).where(
+                EncounterTranscript.patient_id == patient_id
+            )
+            if has_prior_summary:
+                cutoff = patient.summary_updated_at
+                stmt = stmt.where(
+                    or_(
+                        col(EncounterTranscript.created_at) > cutoff,
+                        col(EncounterTranscript.updated_at) > cutoff,
+                    )
+                )
+            stmt = stmt.order_by(col(EncounterTranscript.created_at).asc())
+            transcripts = list(session.exec(stmt).all())
 
-        summary_text: str = message.content[0].text  # type: ignore[union-attr]
+            if not has_prior_summary:
+                if not transcripts and not patient.description:
+                    _set_summary_status_and_commit(session, patient_id, "failed")
+                    return
+            elif not description_changed and not transcripts:
+                _set_summary_status_and_commit(session, patient_id, "failed")
+                return
 
-        patient.summary = summary_text
-        patient.summary_updated_at = datetime.now(timezone.utc)
-        session.add(patient)
-        session.commit()
-    except Exception:
-        logger.exception("Failed to generate AI summary for patient %s", patient_id)
-        session.rollback()
+            prompt = _build_prompt(
+                patient,
+                transcripts,
+                include_medical_history=not has_prior_summary or description_changed,
+            )
+
+            client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+            message = client.messages.create(
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=2000,
+                system=SUMMARY_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": prompt}],
+            )
+
+            summary_text: str = message.content[0].text  # type: ignore[union-attr]
+
+            patient.summary = summary_text
+            patient.summary_status = "completed"
+            patient.summary_updated_at = datetime.now(timezone.utc)
+            session.add(patient)
+            session.commit()
+        except Exception:
+            logger.exception(
+                "Failed to generate AI summary for patient %s", patient_id
+            )
+            session.rollback()
+            with Session(engine) as err_session:
+                _set_summary_status_and_commit(err_session, patient_id, "failed")

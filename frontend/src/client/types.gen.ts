@@ -56,6 +56,7 @@ export type PatientPublic = {
     created_at?: (string | null);
     owner?: (UserPublic | null);
     summary?: (string | null);
+    summary_status?: (string | null);
     summary_updated_at?: (string | null);
 };
 

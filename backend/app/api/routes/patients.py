@@ -1,11 +1,11 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.core.ai_summary import generate_and_save_summary
+from app.core.ai_summary import generate_summary_background
 from app.models import (
     Message,
     Patient,
@@ -100,6 +100,7 @@ def update_patient(
     current_user: CurrentUser,
     id: uuid.UUID,
     patient_in: PatientUpdate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Update a patient.
@@ -111,14 +112,17 @@ def update_patient(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     update_dict = patient_in.model_dump(exclude_unset=True)
     patient.sqlmodel_update(update_dict)
+
+    if "description" in update_dict:
+        patient.summary_status = "processing"
+        background_tasks.add_task(
+            generate_summary_background, id, description_changed=True
+        )
+
     session.add(patient)
     session.commit()
     session.refresh(patient)
-
-    if "description" in update_dict:
-        generate_and_save_summary(session, id, description_changed=True)
-
-    return patient
+    return _patient_to_public(patient, include_owner=True)
 
 
 @router.delete("/{id}")
