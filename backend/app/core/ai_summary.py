@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from sqlalchemy import or_
 from sqlmodel import Session, col, select
 
+from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.core.db import engine
 from app.models import EncounterTranscript, Patient
@@ -83,7 +84,7 @@ def _build_prompt(
 def _set_summary_status_and_commit(
     session: Session, patient_id: uuid.UUID, status: str
 ) -> None:
-    """Set summary_status and immediately commit (for use in background tasks with their own session)."""
+    """Set summary_status and immediately commit."""
     patient = session.get(Patient, patient_id)
     if patient:
         patient.summary_status = status
@@ -101,30 +102,40 @@ def mark_summary_processing(
         session.add(patient)
 
 
-def generate_summary_background(
-    patient_id: uuid.UUID,
-    *,
+@celery_app.task(
+    name="generate_summary",
+    rate_limit="10/m",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=120,
+    max_retries=3,
+)
+def generate_summary_task(
+    patient_id: str,
     description_changed: bool = False,
 ) -> None:
-    """Background task: generate an AI clinical summary with its own DB session.
+    """Celery task: generate an AI clinical summary.
 
-    Uses the shared engine to create an independent session so it can run
-    after the request handler has returned.  On success the status is set
-    to ``"completed"``; on failure it becomes ``"failed"``.
+    Uses its own DB session.  On success the status is set to
+    ``"completed"``; on final failure it becomes ``"failed"``.
+    Celery serialises ``patient_id`` as a string (JSON), so we
+    convert it back to a UUID here.
     """
+    pid = uuid.UUID(patient_id)
+
     if not settings.ANTHROPIC_API_KEY or anthropic is None:
         return
 
     with Session(engine) as session:
         try:
-            patient = session.get(Patient, patient_id)
+            patient = session.get(Patient, pid)
             if not patient:
                 return
 
             has_prior_summary = patient.summary_updated_at is not None
 
             stmt = select(EncounterTranscript).where(
-                EncounterTranscript.patient_id == patient_id
+                EncounterTranscript.patient_id == pid
             )
             if has_prior_summary:
                 cutoff = patient.summary_updated_at
@@ -139,10 +150,10 @@ def generate_summary_background(
 
             if not has_prior_summary:
                 if not transcripts and not patient.description:
-                    _set_summary_status_and_commit(session, patient_id, "failed")
+                    _set_summary_status_and_commit(session, pid, "failed")
                     return
             elif not description_changed and not transcripts:
-                _set_summary_status_and_commit(session, patient_id, "failed")
+                _set_summary_status_and_commit(session, pid, "failed")
                 return
 
             prompt = _build_prompt(
@@ -168,8 +179,9 @@ def generate_summary_background(
             session.commit()
         except Exception:
             logger.exception(
-                "Failed to generate AI summary for patient %s", patient_id
+                "Failed to generate AI summary for patient %s", pid
             )
             session.rollback()
             with Session(engine) as err_session:
-                _set_summary_status_and_commit(err_session, patient_id, "failed")
+                _set_summary_status_and_commit(err_session, pid, "failed")
+            raise

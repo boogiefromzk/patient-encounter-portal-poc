@@ -1,12 +1,15 @@
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import Session, col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.core.ai_summary import generate_summary_background, mark_summary_processing
+from app.core.ai_summary import generate_summary_task, mark_summary_processing
+
+logger = logging.getLogger(__name__)
 from app.models import (
     EncounterTranscript,
     EncounterTranscriptCreate,
@@ -91,7 +94,6 @@ def create_transcript(
     current_user: CurrentUser,
     patient_id: uuid.UUID,
     transcript_in: EncounterTranscriptCreate,
-    background_tasks: BackgroundTasks,
 ) -> Any:
     """Add a new encounter transcript to a patient."""
     _get_patient_or_403(session, current_user, patient_id)
@@ -107,7 +109,10 @@ def create_transcript(
     session.commit()
     session.refresh(transcript)
 
-    background_tasks.add_task(generate_summary_background, patient_id)
+    try:
+        generate_summary_task.delay(str(patient_id))
+    except Exception:
+        logger.exception("Failed to enqueue summary task for patient %s", patient_id)
 
     return _transcript_to_public(transcript, is_editable=True)
 
@@ -120,7 +125,6 @@ def update_transcript(
     patient_id: uuid.UUID,
     transcript_id: uuid.UUID,
     transcript_in: EncounterTranscriptUpdate,
-    background_tasks: BackgroundTasks,
 ) -> Any:
     """Update an encounter transcript (last only for non-admins)."""
     _get_patient_or_403(session, current_user, patient_id)
@@ -158,7 +162,10 @@ def update_transcript(
     session.commit()
     session.refresh(transcript)
 
-    background_tasks.add_task(generate_summary_background, patient_id)
+    try:
+        generate_summary_task.delay(str(patient_id))
+    except Exception:
+        logger.exception("Failed to enqueue summary task for patient %s", patient_id)
 
     return _transcript_to_public(transcript, is_editable=True)
 

@@ -1,11 +1,14 @@
+import logging
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, HTTPException
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.core.ai_summary import generate_summary_background
+from app.core.ai_summary import generate_summary_task
+
+logger = logging.getLogger(__name__)
 from app.models import (
     Message,
     Patient,
@@ -100,7 +103,6 @@ def update_patient(
     current_user: CurrentUser,
     id: uuid.UUID,
     patient_in: PatientUpdate,
-    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Update a patient.
@@ -115,13 +117,17 @@ def update_patient(
 
     if "description" in update_dict:
         patient.summary_status = "processing"
-        background_tasks.add_task(
-            generate_summary_background, id, description_changed=True
-        )
 
     session.add(patient)
     session.commit()
     session.refresh(patient)
+
+    if "description" in update_dict:
+        try:
+            generate_summary_task.delay(str(id), description_changed=True)
+        except Exception:
+            logger.exception("Failed to enqueue summary task for patient %s", id)
+
     return _patient_to_public(patient, include_owner=True)
 
 

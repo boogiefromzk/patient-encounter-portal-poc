@@ -69,6 +69,7 @@ class Settings(BaseSettings):
         )
 
     ANTHROPIC_API_KEY: str | None = None
+    CELERY_BROKER_URL: str
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False
