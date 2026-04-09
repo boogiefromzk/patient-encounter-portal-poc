@@ -10,6 +10,7 @@ from sqlmodel import Session, col, select
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.core.db import engine
+from app.core.redis import publish_summary_update
 from app.models import EncounterTranscript, Patient
 
 try:
@@ -84,12 +85,13 @@ def _build_prompt(
 def _set_summary_status_and_commit(
     session: Session, patient_id: uuid.UUID, status: str
 ) -> None:
-    """Set summary_status and immediately commit."""
+    """Set summary_status and immediately commit, then notify via pub/sub."""
     patient = session.get(Patient, patient_id)
     if patient:
         patient.summary_status = status
         session.add(patient)
         session.commit()
+        publish_summary_update(str(patient_id), status)
 
 
 def mark_summary_processing(
@@ -177,6 +179,7 @@ def generate_summary_task(
             patient.summary_updated_at = datetime.now(timezone.utc)
             session.add(patient)
             session.commit()
+            publish_summary_update(patient_id, "completed")
         except Exception:
             logger.exception(
                 "Failed to generate AI summary for patient %s", pid

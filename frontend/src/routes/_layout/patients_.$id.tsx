@@ -6,6 +6,7 @@ import { Fragment, Suspense, useEffect, useRef, useState } from "react"
 import { PatientsService } from "@/client"
 import { PatientActionsMenu } from "@/components/Patients/PatientActionsMenu"
 import EncounterTranscripts from "@/components/Patients/EncounterTranscripts"
+import { useSummaryWs } from "@/hooks/useSummaryWs"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -70,14 +71,10 @@ function PatientDetailContent() {
   const { user } = useAuth()
   const isAdmin = user?.is_superuser ?? false
 
-  const { data: patient } = useSuspenseQuery({
-    ...getPatientQueryOptions(id),
-    refetchInterval: (query) => {
-      return query.state.data?.summary_status === "processing" ? 2000 : false
-    },
-  })
+  const { data: patient } = useSuspenseQuery(getPatientQueryOptions(id))
 
   const isProcessing = patient.summary_status === "processing"
+  useSummaryWs(id, isProcessing)
   const prevProcessing = useRef(isProcessing)
   const [justFinished, setJustFinished] = useState(false)
 
