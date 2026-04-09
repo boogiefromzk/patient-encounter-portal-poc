@@ -3,37 +3,37 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Search } from "lucide-react"
 import { Suspense } from "react"
 
-import { ItemsService } from "@/client"
+import { PatientsService } from "@/client"
 import { DataTable } from "@/components/Common/DataTable"
-import AddItem from "@/components/Items/AddItem"
-import { getColumns } from "@/components/Items/columns"
-import PendingItems from "@/components/Pending/PendingItems"
+import AddPatient from "@/components/Patients/AddPatient"
+import { getColumns } from "@/components/Patients/columns"
+import PendingPatients from "@/components/Pending/PendingPatients"
 import useAuth from "@/hooks/useAuth"
 
-function getItemsQueryOptions() {
+function getPatientsQueryOptions() {
   return {
-    queryFn: () => ItemsService.readItems({ skip: 0, limit: 100 }),
-    queryKey: ["items"],
+    queryFn: () => PatientsService.readPatients({ skip: 0, limit: 100 }),
+    queryKey: ["patients"],
   }
 }
 
-export const Route = createFileRoute("/_layout/items")({
-  component: Items,
+export const Route = createFileRoute("/_layout/patients")({
+  component: Patients,
   head: () => ({
     meta: [
       {
-        title: "Patients - FastAPI Template",
+        title: "Patients",
       },
     ],
   }),
 })
 
-function ItemsTableContent() {
-  const { data: items } = useSuspenseQuery(getItemsQueryOptions())
+function PatientsTableContent() {
+  const { data: patients } = useSuspenseQuery(getPatientsQueryOptions())
   const { user } = useAuth()
   const isAdmin = user?.is_superuser ?? false
 
-  if (items.data.length === 0) {
+  if (patients.data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-12">
         <div className="rounded-full bg-muted p-4 mb-4">
@@ -49,18 +49,18 @@ function ItemsTableContent() {
     )
   }
 
-  return <DataTable columns={getColumns(isAdmin)} data={items.data} />
+  return <DataTable columns={getColumns(isAdmin)} data={patients.data} />
 }
 
-function ItemsTable() {
+function PatientsTable() {
   return (
-    <Suspense fallback={<PendingItems />}>
-      <ItemsTableContent />
+    <Suspense fallback={<PendingPatients />}>
+      <PatientsTableContent />
     </Suspense>
   )
 }
 
-function Items() {
+function Patients() {
   const { user } = useAuth()
   const isAdmin = user?.is_superuser ?? false
 
@@ -73,9 +73,9 @@ function Items() {
             {isAdmin ? "Create and manage patients" : "Your assigned patients"}
           </p>
         </div>
-        {isAdmin && <AddItem />}
+        {isAdmin && <AddPatient />}
       </div>
-      <ItemsTable />
+      <PatientsTable />
     </div>
   )
 }

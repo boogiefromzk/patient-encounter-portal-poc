@@ -1,23 +1,23 @@
 import { EllipsisVertical } from "lucide-react"
 import { useState } from "react"
 
-import type { ItemPublic } from "@/client"
+import type { PatientPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import AssignManager from "../Items/AssignManager"
-import DeleteItem from "../Items/DeleteItem"
-import EditItem from "../Items/EditItem"
+import AssignManager from "@/components/Patients/AssignManager"
+import DeletePatient from "@/components/Patients/DeletePatient"
+import EditPatient from "@/components/Patients/EditPatient"
 
-interface ItemActionsMenuProps {
-  item: ItemPublic
+interface PatientActionsMenuProps {
+  patient: PatientPublic
   isAdmin?: boolean
 }
 
-export const ItemActionsMenu = ({ item, isAdmin = false }: ItemActionsMenuProps) => {
+export const PatientActionsMenu = ({ patient, isAdmin = false }: PatientActionsMenuProps) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -28,11 +28,11 @@ export const ItemActionsMenu = ({ item, isAdmin = false }: ItemActionsMenuProps)
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <EditItem item={item} onSuccess={() => setOpen(false)} />
+        <EditPatient patient={patient} onSuccess={() => setOpen(false)} />
         {isAdmin && (
-          <AssignManager item={item} onSuccess={() => setOpen(false)} />
+          <AssignManager patient={patient} onSuccess={() => setOpen(false)} />
         )}
-        <DeleteItem id={item.id} onSuccess={() => setOpen(false)} />
+        <DeletePatient id={patient.id} onSuccess={() => setOpen(false)} />
       </DropdownMenuContent>
     </DropdownMenu>
   )

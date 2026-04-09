@@ -47,7 +47,7 @@ const transcriptFormSchema = z.object({
 
 type TranscriptFormData = z.infer<typeof transcriptFormSchema>
 
-function AddTranscriptDialog({ itemId }: { itemId: string }) {
+function AddTranscriptDialog({ patientId }: { patientId: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -65,7 +65,7 @@ function AddTranscriptDialog({ itemId }: { itemId: string }) {
   const mutation = useMutation({
     mutationFn: (data: TranscriptFormData) =>
       TranscriptsService.createTranscript({
-        itemId,
+        patientId,
         requestBody: data,
       }),
     onSuccess: () => {
@@ -76,9 +76,9 @@ function AddTranscriptDialog({ itemId }: { itemId: string }) {
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["items", itemId, "transcripts"],
+        queryKey: ["patients", patientId, "transcripts"],
       })
-      queryClient.invalidateQueries({ queryKey: ["items", itemId] })
+      queryClient.invalidateQueries({ queryKey: ["patients", patientId] })
     },
   })
 
@@ -155,10 +155,10 @@ function AddTranscriptDialog({ itemId }: { itemId: string }) {
 }
 
 function EditTranscriptDialog({
-  itemId,
+  patientId,
   transcript,
 }: {
-  itemId: string
+  patientId: string
   transcript: EncounterTranscriptPublic
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -178,7 +178,7 @@ function EditTranscriptDialog({
   const mutation = useMutation({
     mutationFn: (data: TranscriptFormData) =>
       TranscriptsService.updateTranscript({
-        itemId,
+        patientId,
         transcriptId: transcript.id,
         requestBody: data,
       }),
@@ -189,9 +189,9 @@ function EditTranscriptDialog({
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["items", itemId, "transcripts"],
+        queryKey: ["patients", patientId, "transcripts"],
       })
-      queryClient.invalidateQueries({ queryKey: ["items", itemId] })
+      queryClient.invalidateQueries({ queryKey: ["patients", patientId] })
     },
   })
 
@@ -279,20 +279,20 @@ function formatEncounterDate(dateStr: string): string {
 }
 
 interface EncounterTranscriptsProps {
-  itemId: string
+  patientId: string
 }
 
-const EncounterTranscripts = ({ itemId }: EncounterTranscriptsProps) => {
+const EncounterTranscripts = ({ patientId }: EncounterTranscriptsProps) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["items", itemId, "transcripts"],
-    queryFn: () => TranscriptsService.readTranscripts({ itemId }),
+    queryKey: ["patients", patientId, "transcripts"],
+    queryFn: () => TranscriptsService.readTranscripts({ patientId }),
   })
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Encounter Transcripts</CardTitle>
-        <AddTranscriptDialog itemId={itemId} />
+        <AddTranscriptDialog patientId={patientId} />
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -333,7 +333,7 @@ const EncounterTranscripts = ({ itemId }: EncounterTranscriptsProps) => {
                   </div>
                   {transcript.is_editable && (
                     <EditTranscriptDialog
-                      itemId={itemId}
+                      patientId={patientId}
                       transcript={transcript}
                     />
                   )}

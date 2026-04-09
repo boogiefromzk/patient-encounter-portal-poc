@@ -3,7 +3,7 @@ import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { ItemsService } from "@/client"
+import { PatientsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,23 +19,23 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
-interface DeleteItemProps {
+interface DeletePatientProps {
   id: string
   onSuccess: () => void
 }
 
-const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
+const DeletePatient = ({ id, onSuccess }: DeletePatientProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
   const { handleSubmit } = useForm()
 
-  const deleteItem = async (id: string) => {
-    await ItemsService.deleteItem({ id: id })
+  const deletePatient = async (id: string) => {
+    await PatientsService.deletePatient({ id: id })
   }
 
   const mutation = useMutation({
-    mutationFn: deleteItem,
+    mutationFn: deletePatient,
     onSuccess: () => {
       showSuccessToast("The patient was deleted successfully")
       setIsOpen(false)
@@ -91,4 +91,4 @@ const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
   )
 }
 
-export default DeleteItem
+export default DeletePatient

@@ -13,24 +13,24 @@ from app.models import (
     EncounterTranscriptPublic,
     EncounterTranscriptsPublic,
     EncounterTranscriptUpdate,
-    Item,
     Message,
+    Patient,
     User,
     UserPublic,
 )
 
-router = APIRouter(prefix="/items/{item_id}/transcripts", tags=["transcripts"])
+router = APIRouter(prefix="/patients/{patient_id}/transcripts", tags=["transcripts"])
 
 
-def _get_item_or_403(
-    session: Session, current_user: User, item_id: uuid.UUID
-) -> Item:
-    item = session.get(Item, item_id)
-    if not item:
+def _get_patient_or_403(
+    session: Session, current_user: User, patient_id: uuid.UUID
+) -> Patient:
+    patient = session.get(Patient, patient_id)
+    if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    if not current_user.is_superuser and item.owner_id != current_user.id:
+    if not current_user.is_superuser and patient.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return item
+    return patient
 
 
 def _transcript_to_public(
@@ -51,21 +51,21 @@ def _transcript_to_public(
 def read_transcripts(
     session: SessionDep,
     current_user: CurrentUser,
-    item_id: uuid.UUID,
+    patient_id: uuid.UUID,
 ) -> Any:
     """List encounter transcripts for a patient."""
-    _get_item_or_403(session, current_user, item_id)
+    _get_patient_or_403(session, current_user, patient_id)
 
     count_stmt = (
         select(func.count())
         .select_from(EncounterTranscript)
-        .where(EncounterTranscript.item_id == item_id)
+        .where(EncounterTranscript.patient_id == patient_id)
     )
     count = session.exec(count_stmt).one()
 
     stmt = (
         select(EncounterTranscript)
-        .where(EncounterTranscript.item_id == item_id)
+        .where(EncounterTranscript.patient_id == patient_id)
         .order_by(col(EncounterTranscript.created_at).desc())
     )
     transcripts = session.exec(stmt).all()
@@ -89,21 +89,21 @@ def create_transcript(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    item_id: uuid.UUID,
+    patient_id: uuid.UUID,
     transcript_in: EncounterTranscriptCreate,
 ) -> Any:
     """Add a new encounter transcript to a patient."""
-    _get_item_or_403(session, current_user, item_id)
+    _get_patient_or_403(session, current_user, patient_id)
 
     transcript = EncounterTranscript.model_validate(
         transcript_in,
-        update={"item_id": item_id, "created_by_id": current_user.id},
+        update={"patient_id": patient_id, "created_by_id": current_user.id},
     )
     session.add(transcript)
     session.commit()
     session.refresh(transcript)
 
-    generate_and_save_summary(session, item_id)
+    generate_and_save_summary(session, patient_id)
 
     return _transcript_to_public(transcript, is_editable=True)
 
@@ -113,21 +113,21 @@ def update_transcript(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    item_id: uuid.UUID,
+    patient_id: uuid.UUID,
     transcript_id: uuid.UUID,
     transcript_in: EncounterTranscriptUpdate,
 ) -> Any:
     """Update an encounter transcript (last only for non-admins)."""
-    _get_item_or_403(session, current_user, item_id)
+    _get_patient_or_403(session, current_user, patient_id)
 
     transcript = session.get(EncounterTranscript, transcript_id)
-    if not transcript or transcript.item_id != item_id:
+    if not transcript or transcript.patient_id != patient_id:
         raise HTTPException(status_code=404, detail="Transcript not found")
 
     if not current_user.is_superuser:
         last_stmt = (
             select(EncounterTranscript.id)
-            .where(EncounterTranscript.item_id == item_id)
+            .where(EncounterTranscript.patient_id == patient_id)
             .order_by(col(EncounterTranscript.created_at).desc())
             .limit(1)
         )
@@ -150,7 +150,7 @@ def update_transcript(
     session.commit()
     session.refresh(transcript)
 
-    generate_and_save_summary(session, item_id)
+    generate_and_save_summary(session, patient_id)
 
     return _transcript_to_public(transcript, is_editable=True)
 
@@ -159,20 +159,20 @@ def update_transcript(
 def delete_transcript(
     session: SessionDep,
     current_user: CurrentUser,
-    item_id: uuid.UUID,
+    patient_id: uuid.UUID,
     transcript_id: uuid.UUID,
 ) -> Message:
     """Delete an encounter transcript (last only for non-admins)."""
-    _get_item_or_403(session, current_user, item_id)
+    _get_patient_or_403(session, current_user, patient_id)
 
     transcript = session.get(EncounterTranscript, transcript_id)
-    if not transcript or transcript.item_id != item_id:
+    if not transcript or transcript.patient_id != patient_id:
         raise HTTPException(status_code=404, detail="Transcript not found")
 
     if not current_user.is_superuser:
         last_stmt = (
             select(EncounterTranscript.id)
-            .where(EncounterTranscript.item_id == item_id)
+            .where(EncounterTranscript.patient_id == patient_id)
             .order_by(col(EncounterTranscript.created_at).desc())
             .limit(1)
         )

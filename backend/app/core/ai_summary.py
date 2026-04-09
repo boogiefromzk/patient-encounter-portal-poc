@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from sqlmodel import Session, col, select
 
 from app.core.config import settings
-from app.models import EncounterTranscript, Item
+from app.models import EncounterTranscript, Patient
 
 try:
     import anthropic
@@ -44,20 +44,20 @@ SUMMARY_CATEGORIES = (
 
 
 def _build_prompt(
-    item: Item,
+    patient: Patient,
     transcripts: list[EncounterTranscript],
     *,
     include_medical_history: bool = True,
 ) -> str:
-    sections: list[str] = [f"## Patient: {item.title}"]
+    sections: list[str] = [f"## Patient: {patient.title}"]
 
     if include_medical_history:
         sections.append(
-            f"### Medical History\n{item.description or 'Not recorded.'}"
+            f"### Medical History\n{patient.description or 'Not recorded.'}"
         )
 
-    if item.summary:
-        sections.append(f"### Previous Summary\n{item.summary}")
+    if patient.summary:
+        sections.append(f"### Previous Summary\n{patient.summary}")
 
     transcript_entries: list[str] = []
     for t in transcripts:
@@ -81,7 +81,7 @@ def _build_prompt(
 
 def generate_and_save_summary(
     session: Session,
-    item_id: uuid.UUID,
+    patient_id: uuid.UUID,
     *,
     description_changed: bool = False,
 ) -> None:
@@ -100,17 +100,17 @@ def generate_and_save_summary(
         return
 
     try:
-        item = session.get(Item, item_id)
-        if not item:
+        patient = session.get(Patient, patient_id)
+        if not patient:
             return
 
-        has_prior_summary = item.summary_updated_at is not None
+        has_prior_summary = patient.summary_updated_at is not None
 
         stmt = select(EncounterTranscript).where(
-            EncounterTranscript.item_id == item_id
+            EncounterTranscript.patient_id == patient_id
         )
         if has_prior_summary:
-            cutoff = item.summary_updated_at
+            cutoff = patient.summary_updated_at
             stmt = stmt.where(
                 or_(
                     col(EncounterTranscript.created_at) > cutoff,
@@ -121,13 +121,13 @@ def generate_and_save_summary(
         transcripts = list(session.exec(stmt).all())
 
         if not has_prior_summary:
-            if not transcripts and not item.description:
+            if not transcripts and not patient.description:
                 return
         elif not description_changed and not transcripts:
             return
 
         prompt = _build_prompt(
-            item,
+            patient,
             transcripts,
             include_medical_history=not has_prior_summary or description_changed,
         )
@@ -142,10 +142,10 @@ def generate_and_save_summary(
 
         summary_text: str = message.content[0].text  # type: ignore[union-attr]
 
-        item.summary = summary_text
-        item.summary_updated_at = datetime.now(timezone.utc)
-        session.add(item)
+        patient.summary = summary_text
+        patient.summary_updated_at = datetime.now(timezone.utc)
+        session.add(patient)
         session.commit()
     except Exception:
-        logger.exception("Failed to generate AI summary for item %s", item_id)
+        logger.exception("Failed to generate AI summary for patient %s", patient_id)
         session.rollback()

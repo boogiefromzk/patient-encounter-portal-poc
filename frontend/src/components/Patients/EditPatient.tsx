@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type ItemPublic, ItemsService } from "@/client"
+import { type PatientPublic, PatientsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -41,12 +41,12 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-interface EditItemProps {
-  item: ItemPublic
+interface EditPatientProps {
+  patient: PatientPublic
   onSuccess: () => void
 }
 
-const EditItem = ({ item, onSuccess }: EditItemProps) => {
+const EditPatient = ({ patient, onSuccess }: EditPatientProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -56,14 +56,14 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
-      title: item.title,
-      description: item.description ?? undefined,
+      title: patient.title,
+      description: patient.description ?? undefined,
     },
   })
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
-      ItemsService.updateItem({ id: item.id, requestBody: data }),
+      PatientsService.updatePatient({ id: patient.id, requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Patient updated successfully")
       setIsOpen(false)
@@ -71,7 +71,7 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
     },
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["patients"] })
     },
   })
 
@@ -150,4 +150,4 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
   )
 }
 
-export default EditItem
+export default EditPatient

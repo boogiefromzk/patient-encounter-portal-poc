@@ -1,17 +1,17 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Link } from "@tanstack/react-router"
 
-import type { ItemPublic } from "@/client"
+import type { PatientPublic } from "@/client"
 import { cn } from "@/lib/utils"
-import { ItemActionsMenu } from "./ItemActionsMenu"
+import { PatientActionsMenu } from "./PatientActionsMenu"
 
-const baseColumns: ColumnDef<ItemPublic>[] = [
+const baseColumns: ColumnDef<PatientPublic>[] = [
   {
     accessorKey: "title",
     header: "Full Name",
     cell: ({ row }) => (
       <Link
-        to="/items/$id"
+        to="/patients/$id"
         params={{ id: row.original.id }}
         className="font-medium hover:underline"
       >
@@ -38,7 +38,7 @@ const baseColumns: ColumnDef<ItemPublic>[] = [
   },
 ]
 
-const managerColumn: ColumnDef<ItemPublic> = {
+const managerColumn: ColumnDef<PatientPublic> = {
   id: "clinician",
   header: "Clinician",
   cell: ({ row }) => {
@@ -57,13 +57,13 @@ const managerColumn: ColumnDef<ItemPublic> = {
   },
 }
 
-export function getColumns(isAdmin: boolean): ColumnDef<ItemPublic>[] {
-  const actionsColumn: ColumnDef<ItemPublic> = {
+export function getColumns(isAdmin: boolean): ColumnDef<PatientPublic>[] {
+  const actionsColumn: ColumnDef<PatientPublic> = {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
       <div className="flex justify-end">
-        <ItemActionsMenu item={row.original} isAdmin={isAdmin} />
+        <PatientActionsMenu patient={row.original} isAdmin={isAdmin} />
       </div>
     ),
   }

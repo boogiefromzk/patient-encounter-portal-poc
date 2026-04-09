@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type ItemCreate, ItemsService } from "@/client"
+import { type PatientCreate, PatientsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -41,7 +41,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-const AddItem = () => {
+const AddPatient = () => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -57,8 +57,8 @@ const AddItem = () => {
   })
 
   const mutation = useMutation({
-    mutationFn: (data: ItemCreate) =>
-      ItemsService.createItem({ requestBody: data }),
+    mutationFn: (data: PatientCreate) =>
+      PatientsService.createPatient({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Patient created successfully")
       form.reset()
@@ -66,7 +66,7 @@ const AddItem = () => {
     },
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["patients"] })
     },
   })
 
@@ -149,4 +149,4 @@ const AddItem = () => {
   )
 }
 
-export default AddItem
+export default AddPatient

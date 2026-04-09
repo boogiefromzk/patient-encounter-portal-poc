@@ -53,7 +53,7 @@ class User(UserBase, table=True):
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    patients: list["Patient"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -68,30 +68,28 @@ class UsersPublic(SQLModel):
 
 
 # Shared properties
-class ItemBase(SQLModel):
+class PatientBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=10000)
 
 
-# Properties to receive on item creation
-class ItemCreate(ItemBase):
+class PatientCreate(PatientBase):
     pass
 
 
-# Properties to receive on item update
-class ItemUpdate(ItemBase):
+class PatientUpdate(PatientBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore[assignment]
     description: str | None = Field(default=None, max_length=10000)  # type: ignore[assignment]
 
 
-# Database model, database table inferred from class name
-class Item(ItemBase, table=True):
+class Patient(PatientBase, table=True):
+    __tablename__ = "patient"
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
-    # Override to use TEXT column type (no length cap at DB level)
     description: str | None = Field(default=None, sa_type=Text())  # type: ignore[assignment]
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -101,14 +99,13 @@ class Item(ItemBase, table=True):
         default=None,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
-    owner: User | None = Relationship(back_populates="items")
+    owner: User | None = Relationship(back_populates="patients")
     transcripts: list["EncounterTranscript"] = Relationship(
-        back_populates="item", cascade_delete=True
+        back_populates="patient", cascade_delete=True
     )
 
 
-# Properties to return via API, id is always required
-class ItemPublic(ItemBase):
+class PatientPublic(PatientBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     created_at: datetime | None = None
@@ -117,13 +114,12 @@ class ItemPublic(ItemBase):
     summary_updated_at: datetime | None = None
 
 
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
+class PatientsPublic(SQLModel):
+    data: list[PatientPublic]
     count: int
 
 
-# Used by superusers to reassign a patient's managing user
-class ItemAssignOwner(SQLModel):
+class PatientAssignOwner(SQLModel):
     owner_id: uuid.UUID
 
 
@@ -152,21 +148,21 @@ class EncounterTranscript(EncounterTranscriptBase, table=True):
     )
     text: str = Field(sa_type=Text())  # type: ignore[assignment]
     encounter_date: date = Field(sa_type=Date())  # type: ignore[assignment]
-    item_id: uuid.UUID = Field(
-        foreign_key="item.id", nullable=False, ondelete="CASCADE"
+    patient_id: uuid.UUID = Field(
+        foreign_key="patient.id", nullable=False, ondelete="CASCADE"
     )
     created_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
-    item: Item | None = Relationship(back_populates="transcripts")
+    patient: Patient | None = Relationship(back_populates="transcripts")
     created_by: User | None = Relationship()
 
 
 class EncounterTranscriptPublic(EncounterTranscriptBase):
     id: uuid.UUID
-    item_id: uuid.UUID
+    patient_id: uuid.UUID
     created_by_id: uuid.UUID
     created_at: datetime | None = None
     updated_at: datetime | None = None

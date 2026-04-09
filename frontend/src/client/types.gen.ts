@@ -22,7 +22,7 @@ export type EncounterTranscriptPublic = {
     text: string;
     encounter_date: string;
     id: string;
-    item_id: string;
+    patient_id: string;
     created_by_id: string;
     created_at?: (string | null);
     created_by?: (UserPublic | null);
@@ -39,16 +39,16 @@ export type EncounterTranscriptUpdate = {
     encounter_date?: (string | null);
 };
 
-export type ItemCreate = {
+export type PatientCreate = {
     title: string;
     description?: (string | null);
 };
 
-export type ItemAssignOwner = {
+export type PatientAssignOwner = {
     owner_id: string;
 };
 
-export type ItemPublic = {
+export type PatientPublic = {
     title: string;
     description?: (string | null);
     id: string;
@@ -59,12 +59,12 @@ export type ItemPublic = {
     summary_updated_at?: (string | null);
 };
 
-export type ItemsPublic = {
-    data: Array<ItemPublic>;
+export type PatientsPublic = {
+    data: Array<PatientPublic>;
     count: number;
 };
 
-export type ItemUpdate = {
+export type PatientUpdate = {
     title?: (string | null);
     description?: (string | null);
 };
@@ -146,44 +146,44 @@ export type ValidationError = {
     };
 };
 
-export type ItemsReadItemsData = {
+export type PatientsReadPatientsData = {
     limit?: number;
     skip?: number;
 };
 
-export type ItemsReadItemsResponse = (ItemsPublic);
+export type PatientsReadPatientsResponse = (PatientsPublic);
 
-export type ItemsCreateItemData = {
-    requestBody: ItemCreate;
+export type PatientsCreatePatientData = {
+    requestBody: PatientCreate;
 };
 
-export type ItemsCreateItemResponse = (ItemPublic);
+export type PatientsCreatePatientResponse = (PatientPublic);
 
-export type ItemsReadItemData = {
+export type PatientsReadPatientData = {
     id: string;
 };
 
-export type ItemsReadItemResponse = (ItemPublic);
+export type PatientsReadPatientResponse = (PatientPublic);
 
-export type ItemsUpdateItemData = {
+export type PatientsUpdatePatientData = {
     id: string;
-    requestBody: ItemUpdate;
+    requestBody: PatientUpdate;
 };
 
-export type ItemsUpdateItemResponse = (ItemPublic);
+export type PatientsUpdatePatientResponse = (PatientPublic);
 
-export type ItemsDeleteItemData = {
+export type PatientsDeletePatientData = {
     id: string;
 };
 
-export type ItemsDeleteItemResponse = (Message);
+export type PatientsDeletePatientResponse = (Message);
 
-export type ItemsAssignItemOwnerData = {
+export type PatientsAssignPatientOwnerData = {
     id: string;
-    requestBody: ItemAssignOwner;
+    requestBody: PatientAssignOwner;
 };
 
-export type ItemsAssignItemOwnerResponse = (ItemPublic);
+export type PatientsAssignPatientOwnerResponse = (PatientPublic);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
@@ -280,20 +280,20 @@ export type UtilsTestEmailResponse = (Message);
 export type UtilsHealthCheckResponse = (boolean);
 
 export type TranscriptsReadTranscriptsData = {
-    itemId: string;
+    patientId: string;
 };
 
 export type TranscriptsReadTranscriptsResponse = (EncounterTranscriptsPublic);
 
 export type TranscriptsCreateTranscriptData = {
-    itemId: string;
+    patientId: string;
     requestBody: EncounterTranscriptCreate;
 };
 
 export type TranscriptsCreateTranscriptResponse = (EncounterTranscriptPublic);
 
 export type TranscriptsUpdateTranscriptData = {
-    itemId: string;
+    patientId: string;
     transcriptId: string;
     requestBody: EncounterTranscriptUpdate;
 };
@@ -301,7 +301,7 @@ export type TranscriptsUpdateTranscriptData = {
 export type TranscriptsUpdateTranscriptResponse = (EncounterTranscriptPublic);
 
 export type TranscriptsDeleteTranscriptData = {
-    itemId: string;
+    patientId: string;
     transcriptId: string;
 };
 

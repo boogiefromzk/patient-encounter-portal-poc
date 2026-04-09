@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const PendingItems = () => (
+const PendingPatients = () => (
   <Table>
     <TableHeader>
       <TableRow>
@@ -43,4 +43,4 @@ const PendingItems = () => (
   </Table>
 )
 
-export default PendingItems
+export default PendingPatients

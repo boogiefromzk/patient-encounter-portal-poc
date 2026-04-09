@@ -3,9 +3,9 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowLeft, BrainCircuit, UserCircle } from "lucide-react"
 import { Fragment, Suspense } from "react"
 
-import { ItemsService } from "@/client"
-import { ItemActionsMenu } from "@/components/Items/ItemActionsMenu"
-import EncounterTranscripts from "@/components/Items/EncounterTranscripts"
+import { PatientsService } from "@/client"
+import { PatientActionsMenu } from "@/components/Patients/PatientActionsMenu"
+import EncounterTranscripts from "@/components/Patients/EncounterTranscripts"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -44,12 +44,12 @@ function SimpleMarkdown({ text }: { text: string }) {
 
 function getPatientQueryOptions(id: string) {
   return {
-    queryFn: () => ItemsService.readItem({ id }),
-    queryKey: ["items", id],
+    queryFn: () => PatientsService.readPatient({ id }),
+    queryKey: ["patients", id],
   }
 }
 
-export const Route = createFileRoute("/_layout/items_/$id")({
+export const Route = createFileRoute("/_layout/patients_/$id")({
   component: PatientDetailPage,
   head: () => ({
     meta: [{ title: "Patient - FastAPI Template" }],
@@ -66,7 +66,7 @@ function PatientDetailContent() {
     <div className="flex flex-col gap-6 max-w-3xl">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
-          <Link to="/items">
+          <Link to="/patients">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -76,7 +76,7 @@ function PatientDetailContent() {
           </h1>
           <p className="text-sm text-muted-foreground">Patient record</p>
         </div>
-        {isAdmin && <ItemActionsMenu item={patient} isAdmin />}
+        {isAdmin && <PatientActionsMenu patient={patient} isAdmin />}
       </div>
 
       <Card>
@@ -120,7 +120,7 @@ function PatientDetailContent() {
         </CardContent>
       </Card>
 
-      <EncounterTranscripts itemId={id} />
+      <EncounterTranscripts patientId={id} />
 
       {patient.owner && (
         <Card>

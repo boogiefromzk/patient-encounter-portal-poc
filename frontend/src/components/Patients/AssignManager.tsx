@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type ItemPublic, ItemsService, UsersService } from "@/client"
+import { type PatientPublic, PatientsService, UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -43,11 +43,11 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 interface AssignManagerProps {
-  item: ItemPublic
+  patient: PatientPublic
   onSuccess: () => void
 }
 
-const AssignManager = ({ item, onSuccess }: AssignManagerProps) => {
+const AssignManager = ({ patient, onSuccess }: AssignManagerProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -61,14 +61,14 @@ const AssignManager = ({ item, onSuccess }: AssignManagerProps) => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      owner_id: item.owner_id,
+      owner_id: patient.owner_id,
     },
   })
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
-      ItemsService.assignItemOwner({
-        id: item.id,
+      PatientsService.assignPatientOwner({
+        id: patient.id,
         requestBody: { owner_id: data.owner_id },
       }),
     onSuccess: () => {
@@ -78,7 +78,7 @@ const AssignManager = ({ item, onSuccess }: AssignManagerProps) => {
     },
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["patients"] })
     },
   })
 

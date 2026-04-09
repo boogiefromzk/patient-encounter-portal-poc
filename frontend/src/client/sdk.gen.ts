@@ -3,22 +3,22 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, ItemsAssignItemOwnerData, ItemsAssignItemOwnerResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, TranscriptsReadTranscriptsData, TranscriptsReadTranscriptsResponse, TranscriptsCreateTranscriptData, TranscriptsCreateTranscriptResponse, TranscriptsUpdateTranscriptData, TranscriptsUpdateTranscriptResponse, TranscriptsDeleteTranscriptData, TranscriptsDeleteTranscriptResponse } from './types.gen';
+import type { PatientsReadPatientsData, PatientsReadPatientsResponse, PatientsCreatePatientData, PatientsCreatePatientResponse, PatientsReadPatientData, PatientsReadPatientResponse, PatientsUpdatePatientData, PatientsUpdatePatientResponse, PatientsDeletePatientData, PatientsDeletePatientResponse, PatientsAssignPatientOwnerData, PatientsAssignPatientOwnerResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, TranscriptsReadTranscriptsData, TranscriptsReadTranscriptsResponse, TranscriptsCreateTranscriptData, TranscriptsCreateTranscriptResponse, TranscriptsUpdateTranscriptData, TranscriptsUpdateTranscriptResponse, TranscriptsDeleteTranscriptData, TranscriptsDeleteTranscriptResponse } from './types.gen';
 
-export class ItemsService {
+export class PatientsService {
     /**
-     * Read Items
-     * Retrieve items.
+     * Read Patients
+     * Retrieve patients.
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
-     * @returns ItemsPublic Successful Response
+     * @returns PatientsPublic Successful Response
      * @throws ApiError
      */
-    public static readItems(data: ItemsReadItemsData = {}): CancelablePromise<ItemsReadItemsResponse> {
+    public static readPatients(data: PatientsReadPatientsData = {}): CancelablePromise<PatientsReadPatientsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/',
+            url: '/api/v1/patients/',
             query: {
                 skip: data.skip,
                 limit: data.limit
@@ -30,17 +30,17 @@ export class ItemsService {
     }
     
     /**
-     * Create Item
-     * Create new item.
+     * Create Patient
+     * Create new patient.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns PatientPublic Successful Response
      * @throws ApiError
      */
-    public static createItem(data: ItemsCreateItemData): CancelablePromise<ItemsCreateItemResponse> {
+    public static createPatient(data: PatientsCreatePatientData): CancelablePromise<PatientsCreatePatientResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/items/',
+            url: '/api/v1/patients/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -50,17 +50,17 @@ export class ItemsService {
     }
     
     /**
-     * Read Item
-     * Get item by ID.
+     * Read Patient
+     * Get patient by ID.
      * @param data The data for the request.
      * @param data.id
-     * @returns ItemPublic Successful Response
+     * @returns PatientPublic Successful Response
      * @throws ApiError
      */
-    public static readItem(data: ItemsReadItemData): CancelablePromise<ItemsReadItemResponse> {
+    public static readPatient(data: PatientsReadPatientData): CancelablePromise<PatientsReadPatientResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/patients/{id}',
             path: {
                 id: data.id
             },
@@ -71,18 +71,18 @@ export class ItemsService {
     }
     
     /**
-     * Update Item
-     * Update an item.
+     * Update Patient
+     * Update a patient.
      * @param data The data for the request.
      * @param data.id
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns PatientPublic Successful Response
      * @throws ApiError
      */
-    public static updateItem(data: ItemsUpdateItemData): CancelablePromise<ItemsUpdateItemResponse> {
+    public static updatePatient(data: PatientsUpdatePatientData): CancelablePromise<PatientsUpdatePatientResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/patients/{id}',
             path: {
                 id: data.id
             },
@@ -95,17 +95,17 @@ export class ItemsService {
     }
     
     /**
-     * Delete Item
-     * Delete an item.
+     * Delete Patient
+     * Delete a patient.
      * @param data The data for the request.
      * @param data.id
      * @returns Message Successful Response
      * @throws ApiError
      */
-    public static deleteItem(data: ItemsDeleteItemData): CancelablePromise<ItemsDeleteItemResponse> {
+    public static deletePatient(data: PatientsDeletePatientData): CancelablePromise<PatientsDeletePatientResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/patients/{id}',
             path: {
                 id: data.id
             },
@@ -116,18 +116,18 @@ export class ItemsService {
     }
     
     /**
-     * Assign Item Owner
+     * Assign Patient Owner
      * Reassign the managing user of a patient. Superusers only.
      * @param data The data for the request.
      * @param data.id
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns PatientPublic Successful Response
      * @throws ApiError
      */
-    public static assignItemOwner(data: ItemsAssignItemOwnerData): CancelablePromise<ItemsAssignItemOwnerResponse> {
+    public static assignPatientOwner(data: PatientsAssignPatientOwnerData): CancelablePromise<PatientsAssignPatientOwnerResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/items/{id}/owner',
+            url: '/api/v1/patients/{id}/owner',
             path: {
                 id: data.id
             },
@@ -496,16 +496,16 @@ export class TranscriptsService {
      * Read Transcripts
      * List encounter transcripts for a patient.
      * @param data The data for the request.
-     * @param data.itemId
+     * @param data.patientId
      * @returns EncounterTranscriptsPublic Successful Response
      * @throws ApiError
      */
     public static readTranscripts(data: TranscriptsReadTranscriptsData): CancelablePromise<TranscriptsReadTranscriptsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/{item_id}/transcripts/',
+            url: '/api/v1/patients/{patient_id}/transcripts/',
             path: {
-                item_id: data.itemId
+                patient_id: data.patientId
             },
             errors: {
                 422: 'Validation Error'
@@ -517,7 +517,7 @@ export class TranscriptsService {
      * Create Transcript
      * Add a new encounter transcript to a patient.
      * @param data The data for the request.
-     * @param data.itemId
+     * @param data.patientId
      * @param data.requestBody
      * @returns EncounterTranscriptPublic Successful Response
      * @throws ApiError
@@ -525,9 +525,9 @@ export class TranscriptsService {
     public static createTranscript(data: TranscriptsCreateTranscriptData): CancelablePromise<TranscriptsCreateTranscriptResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/items/{item_id}/transcripts/',
+            url: '/api/v1/patients/{patient_id}/transcripts/',
             path: {
-                item_id: data.itemId
+                patient_id: data.patientId
             },
             body: data.requestBody,
             mediaType: 'application/json',
@@ -541,7 +541,7 @@ export class TranscriptsService {
      * Update Transcript
      * Update an encounter transcript.
      * @param data The data for the request.
-     * @param data.itemId
+     * @param data.patientId
      * @param data.transcriptId
      * @param data.requestBody
      * @returns EncounterTranscriptPublic Successful Response
@@ -550,9 +550,9 @@ export class TranscriptsService {
     public static updateTranscript(data: TranscriptsUpdateTranscriptData): CancelablePromise<TranscriptsUpdateTranscriptResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/items/{item_id}/transcripts/{transcript_id}',
+            url: '/api/v1/patients/{patient_id}/transcripts/{transcript_id}',
             path: {
-                item_id: data.itemId,
+                patient_id: data.patientId,
                 transcript_id: data.transcriptId
             },
             body: data.requestBody,
@@ -567,7 +567,7 @@ export class TranscriptsService {
      * Delete Transcript
      * Delete an encounter transcript.
      * @param data The data for the request.
-     * @param data.itemId
+     * @param data.patientId
      * @param data.transcriptId
      * @returns Message Successful Response
      * @throws ApiError
@@ -575,9 +575,9 @@ export class TranscriptsService {
     public static deleteTranscript(data: TranscriptsDeleteTranscriptData): CancelablePromise<TranscriptsDeleteTranscriptResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/items/{item_id}/transcripts/{transcript_id}',
+            url: '/api/v1/patients/{patient_id}/transcripts/{transcript_id}',
             path: {
-                item_id: data.itemId,
+                patient_id: data.patientId,
                 transcript_id: data.transcriptId
             },
             errors: {
