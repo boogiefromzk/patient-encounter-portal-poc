@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.venv/
+
+# Lock files
+bun.lock
+uv.lock
+
+# Build & coverage artifacts
+dist/
+dist-ssr/
+htmlcov/
+backend/htmlcov/
+
+# Test artifacts
+test-results/
+blob-report/
+playwright-report/
+playwright/.cache/
+playwright/.auth/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.cache/
+*.egg-info/
+
+# Environment files
+.env
+
+# Media / binary files
+*.mp4
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.ico
+*.svg
+
+# Git
+.git/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# Docker
+Dockerfile
+Dockerfile.*
+.dockerignore
+
+# Copier template metadata
+.copier/
